@@ -28,22 +28,6 @@ Free SimHub overlay suite for iRacing — timing, relatives, radar, strategy, Di
 
 Fulcrum Suite is a free collection of SimHub overlays designed to improve race awareness, timing, strategy and in-car information while keeping a consistent Fulcrum visual style.
 
-## Included Overlays
-
-- Fulcrum Conditions
-- Fulcrum Delta
-- Fulcrum DigiFlags
-- Fulcrum Pit Assistant
-- Fulcrum Radar
-- Fulcrum Rejoin Assistant
-- Fulcrum Relatives
-- Fulcrum Sectors Pop-Up
-- Fulcrum Sectors Table
-- Fulcrum Strategy Engineer
-- Fulcrum Systems
-- Fulcrum Wind
-
-
 ## Preview
 
 <p align="center">
@@ -61,6 +45,23 @@ Fulcrum Suite is a free collection of SimHub overlays designed to improve race a
 <p align="center">
   <img src="fulcrum-digiflags.png" width="760">
 </p>
+
+
+## Included Overlays
+
+- Fulcrum Conditions
+- Fulcrum Delta
+- Fulcrum DigiFlags
+- Fulcrum Pit Assistant
+- Fulcrum Radar
+- Fulcrum Rejoin Assistant
+- Fulcrum Relatives
+- Fulcrum Sectors Pop-Up
+- Fulcrum Sectors Table
+- Fulcrum Strategy Engineer
+- Fulcrum Systems
+- Fulcrum Wind
+
 
 ## Highlights
 
