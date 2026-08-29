@@ -194,8 +194,6 @@ Thank you for supporting the project.
 
 ## Follow FulcrumTTV
 
-## Follow FulcrumTTV
-
 - [YouTube](https://youtube.com/@fulcrumttv)
 - [Twitch](https://www.twitch.tv/fulcrumttv)
 - [TikTok](https://www.tiktok.com/@fulcrumttv)
