@@ -1,0 +1,37 @@
+Fulcrum Suite - Notices and Attribution
+=======================================
+
+Copyright (C) 2026 FulcrumTTV
+
+Fulcrum Suite is distributed under the GNU General Public License,
+version 3, or (at your option) any later version (GPL-3.0-or-later).
+
+Upstream attribution
+--------------------
+Portions of the Relative/GAP implementation were developed with reference
+to and adaptation of concepts/code from benofficial2's Official Overlays:
+
+https://github.com/fixfactory/bo2-official-overlays
+
+Upstream copyright:
+Copyright (C) 2023-2026 benofficial2
+
+The upstream project is licensed under the GNU General Public License,
+version 3, or (at your option) any later version.
+
+Fulcrum modifications
+---------------------
+FulcrumTTV has modified and expanded the relevant implementation for
+Fulcrum Suite, including integration with Fulcrum's own plugin architecture,
+timing/reference behavior, publishing layer, UI/settings, and other suite
+features. The public beta source snapshot corresponds to Fulcrum Plugin
+v4.1.32 / Fulcrum Suite v1.0.0-beta.1 (2026-08-29).
+
+This attribution does not imply endorsement by, affiliation with, or
+sponsorship by benofficial2 or SimHub.
+
+SimHub
+------
+Fulcrum Suite is an independent project for SimHub. SimHub is developed
+and distributed separately by its respective author(s). FulcrumTTV is not
+affiliated with or endorsed by SimHub.
