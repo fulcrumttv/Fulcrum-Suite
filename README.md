@@ -1,3 +1,27 @@
+<p align="center">
+  <img src="fulcrum-logo.png" width="180">
+</p>
+
+<h1 align="center">Fulcrum Suite</h1>
+
+<p align="center">
+  Free SimHub overlay suite for iRacing
+</p>
+
+<p align="center">
+  <a href="https://github.com/fulcrumttv/Fulcrum-Suite/releases/tag/v1.0.0-beta.1">
+    Download Latest Release
+  </a>
+  •
+  <a href="Fulcrum_Suite_Guide_EN.pdf">
+    English Guide
+  </a>
+  •
+  <a href="Fulcrum_Suite_Guia_ES.pdf">
+    Guía en Español
+  </a>
+</p>
+
 # Fulcrum Suite
 
 Free SimHub overlay suite for iRacing — timing, relatives, radar, strategy, DigiFlags and more.
@@ -18,6 +42,21 @@ Fulcrum Suite is a free collection of SimHub overlays designed to improve race a
 - Fulcrum Strategy Engineer
 - Fulcrum Systems
 - Fulcrum Wind
+
+
+## Preview
+
+### Delta
+![Fulcrum Delta](fulcrum-delta.png)
+
+### Relatives
+![Fulcrum Relatives](fulcrum-relatives.png)
+
+### Radar
+![Fulcrum Radar](fulcrum-radar.png)
+
+### DigiFlags
+![Fulcrum DigiFlags](fulcrum-digiflags.png)
 
 ## Highlights
 
@@ -123,10 +162,8 @@ Fulcrum Radar supports:
 
 ## Documentation
 
-Full installation, setup and overlay documentation is included with every release.
-
-- English Guide
-- Guía en Español
+- [English Guide](Fulcrum_Suite_Guide_EN.pdf)
+- [Guía en Español](Fulcrum_Suite_Guia_ES.pdf)
 
 ## Requirements
 
@@ -152,7 +189,9 @@ Thank you for supporting the project.
 
 ## Follow FulcrumTTV
 
-- YouTube: @FulcrumTTV
-- Twitch: @FulcrumTTV
-- TikTok: @FulcrumTTV
-- Instagram: @FulcrumTTV
+## Follow FulcrumTTV
+
+- [YouTube](https://youtube.com/@fulcrumttv)
+- [Twitch](https://www.twitch.tv/fulcrumttv)
+- [TikTok](https://www.tiktok.com/@fulcrumttv)
+- [Instagram](https://www.instagram.com/fulcrumttv)
