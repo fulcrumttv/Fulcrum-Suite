@@ -46,17 +46,21 @@ Fulcrum Suite is a free collection of SimHub overlays designed to improve race a
 
 ## Preview
 
-### Delta
-![Fulcrum Delta](fulcrum-delta.png)
+<p align="center">
+  <img src="fulcrum-delta.png" width="760">
+</p>
 
-### Relatives
-![Fulcrum Relatives](fulcrum-relatives.png)
+<p align="center">
+  <img src="fulcrum-relatives.png" width="760">
+</p>
 
-### Radar
-![Fulcrum Radar](fulcrum-radar.png)
+<p align="center">
+  <img src="fulcrum-radar.png" width="420">
+</p>
 
-### DigiFlags
-![Fulcrum DigiFlags](fulcrum-digiflags.png)
+<p align="center">
+  <img src="fulcrum-digiflags.png" width="760">
+</p>
 
 ## Highlights
 
