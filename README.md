@@ -1,2 +1,2 @@
 # Fulcrum-Suite
-Free iRacing SimHub Overlays
+Free SimHub overlay suite for iRacing — timing, relatives, radar, strategy, DigiFlags and more.
