@@ -1,51 +1,132 @@
-# Fulcrum-Suite
+# Fulcrum Suite
+
 Free SimHub overlay suite for iRacing — timing, relatives, radar, strategy, DigiFlags and more.
 
-## Features
+Fulcrum Suite is a free collection of SimHub overlays designed to improve race awareness, timing, strategy and in-car information while keeping a consistent Fulcrum visual style.
 
-Fulcrum Suite includes:
+## Included Overlays
 
+- Fulcrum Conditions
 - Fulcrum Delta
+- Fulcrum DigiFlags
+- Fulcrum Pit Assistant
+- Fulcrum Radar
+- Fulcrum Rejoin Assistant
 - Fulcrum Relatives
 - Fulcrum Sectors Pop-Up
 - Fulcrum Sectors Table
-- Fulcrum Radar
-- Fulcrum Rejoin Assistant
-- Fulcrum Pit Assistant
 - Fulcrum Strategy Engineer
 - Fulcrum Systems
-- Fulcrum Conditions
 - Fulcrum Wind
-- Fulcrum DigiFlags
+
+## Highlights
+
+- Selectable timing reference:
+  - **MY BEST LAP**
+  - **CLASS SESSION BEST**
+- Shared timing reference across:
+  - Fulcrum Delta
+  - Sectors Pop-Up
+  - Sectors Table
+- Class-aware timing and multiclass support
+- Direct EST GAP behavior in Fulcrum Relatives
+- Sports / Formula Radar modes
+- Configurable Relatives columns, widths and layout
+- Configurable DigiFlags positioning, size, brightness and alert behavior
+- Pit limiter and engage-limiter warnings
+- Race flag animations
+- Incident alerts
+- Rejoin traffic assistance
+- Fuel and stint strategy tools
+- Environmental and wind information
 
 ## Installation
 
-1. Download the latest release.
+1. Download the latest Fulcrum Suite release.
 2. Close SimHub.
-3. Copy `Fulcrum.Plugin.dll` and `Fulcrum.Core.dll` to your SimHub installation folder.
+3. Copy:
+   - `Fulcrum.Plugin.dll`
+   - `Fulcrum.Core.dll`
+
+   into your SimHub installation folder:
+
+   `C:\Program Files (x86)\SimHub\`
+
 4. Open SimHub.
 5. Go to **Add/remove features**.
 6. Make sure **Fulcrum Suite** is enabled.
 7. Enable **Show in left main menu**.
-8. Import the `.simhubdash` files from the `Overlays` folder.
+8. Open the `Overlays` folder included with the release.
+9. Import the `.simhubdash` files you want to use.
+10. Confirm the overlays appear under **Dash Studio > Overlays**.
 
 ## Timing Reference
 
-Fulcrum Suite allows you to choose between:
+Fulcrum Suite includes a global timing reference selector.
 
-- **MY BEST LAP**
-- **CLASS SESSION BEST**
+### MY BEST LAP
+Uses your fastest valid personal lap in the current session.
 
-This setting affects:
+### CLASS SESSION BEST
+Uses the fastest valid lap set by a driver in your class.
+
+This option affects:
 
 - Fulcrum Delta
 - Fulcrum Sectors Pop-Up
 - Fulcrum Sectors Table
 
+Fulcrum Relative GAP is not affected by this setting.
+
+## Customization
+
+### DigiFlags
+
+Fulcrum DigiFlags can be configured directly from Fulcrum Suite:
+
+- Enable / disable DigiFlags
+- Preview panels while configuring
+- Panel spacing
+- Panel width
+- Panel height
+- Horizontal offset
+- Vertical offset
+- Brightness
+- Incident alert hold
+- Auto-hide when no active signal
+
+### Relatives
+
+Fulcrum Relatives includes configurable:
+
+- Position
+- Position gain / loss
+- Car number
+- Country flags
+- Driver
+- Manufacturer logo
+- License / Safety Rating / iRating
+- Tire compound
+- Overtake / Push-to-Pass
+- Live GAP
+- Status / stint
+- Last lap
+
+Column widths and visibility can be adjusted from Fulcrum Suite.
+
+### Radar
+
+Fulcrum Radar supports:
+
+- **Sports mode**
+- **Formula mode**
+
 ## Documentation
 
-- English Guide — included with the release
-- Guía en Español — included with the release
+Full installation, setup and overlay documentation is included with every release.
+
+- English Guide
+- Guía en Español
 
 ## Requirements
 
@@ -53,9 +134,23 @@ This setting affects:
 - SimHub
 - iRacing
 
+## Beta Notice
+
+Fulcrum Suite is currently in public beta.
+
+Feedback and bug reports are welcome.
+
 ## Support FulcrumTTV
 
-You can support the project by following FulcrumTTV:
+Fulcrum Suite is completely free.
+
+If you enjoy the project and would like to support its continued development, testing and future updates, you can support FulcrumTTV here:
+
+[Support FulcrumTTV via PayPal](https://www.paypal.com/ncp/payment/UQBY2U4HL2RDN)
+
+Thank you for supporting the project.
+
+## Follow FulcrumTTV
 
 - YouTube: @FulcrumTTV
 - Twitch: @FulcrumTTV
