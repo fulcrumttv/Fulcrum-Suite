@@ -216,6 +216,6 @@ Special thanks to:
 
 - **SimHub** — for providing an incredibly powerful and free platform that makes projects like Fulcrum Suite possible.
 - **BenOfficial2** — for the inspiration that helped shape some of the ideas behind Fulcrum Suite.
-    Some Relative/GAP implementation concepts and code were adapted from BenOfficial2's Official Overlays project under GPL-3.0-or-later.
+- Some Relative/GAP implementation concepts and code were adapted from BenOfficial2's Official Overlays project under GPL-3.0-or-later.
 
 Fulcrum Suite is an independent project and is not affiliated with or endorsed by SimHub or BenOfficial2.
