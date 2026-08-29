@@ -182,6 +182,21 @@ Fulcrum Suite is currently in public beta.
 
 Feedback and bug reports are welcome.
 
+## Feedback & Bug Reports
+
+Fulcrum Suite is currently in public beta.
+
+If you find a bug, unexpected behavior or have a suggestion, please open an issue in this repository.
+
+When reporting a problem, please include:
+
+- Overlay affected
+- Fulcrum Suite / Plugin version
+- SimHub version
+- iRacing car and session type
+- Description of the issue
+- Screenshot or video if possible
+
 ## Support FulcrumTTV
 
 Fulcrum Suite is completely free.
