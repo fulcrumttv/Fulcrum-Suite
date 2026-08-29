@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="fulcrum-logo.png" width="220">
+  <img src="fulcrum-logo.png" width="240">
 </p>
 
 <h1 align="center">Fulcrum Suite</h1>
@@ -195,3 +195,12 @@ Thank you for supporting the project.
 - [Twitch](https://www.twitch.tv/fulcrumttv)
 - [TikTok](https://www.tiktok.com/@fulcrumttv)
 - [Instagram](https://www.instagram.com/fulcrumttv)
+
+## Acknowledgements
+
+Special thanks to:
+
+- **SimHub** — for providing an incredibly powerful and free platform that makes projects like Fulcrum Suite possible.
+- **BenOfficial2** — for the inspiration that helped shape some of the ideas behind Fulcrum Suite.
+
+Fulcrum Suite is an independent project and is not affiliated with or endorsed by SimHub or BenOfficial2.
