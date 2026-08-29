@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="fulcrum-logo.png" width="180">
+  <img src="fulcrum-logo.png" width="220">
 </p>
 
 <h1 align="center">Fulcrum Suite</h1>
@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/fulcrumttv/Fulcrum-Suite/releases/tag/v1.0.0-beta.1">
+  <a href="https://github.com/fulcrumttv/Fulcrum-Suite/releases/latest">
     Download Latest Release
   </a>
   •
