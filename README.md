@@ -199,11 +199,23 @@ Thank you for supporting the project.
 - [TikTok](https://www.tiktok.com/@fulcrumttv)
 - [Instagram](https://www.instagram.com/fulcrumttv)
 
+## License
+
+Fulcrum Suite is licensed under the **GNU General Public License v3.0 or later (GPL-3.0-or-later)**.
+
+The corresponding source code for each public release is provided alongside the release binaries.
+
+See:
+- [LICENSE](LICENSE)
+- [NOTICE](NOTICE)
+- [Latest Release](https://github.com/fulcrumttv/Fulcrum-Suite/releases/latest)
+
 ## Acknowledgements
 
 Special thanks to:
 
 - **SimHub** — for providing an incredibly powerful and free platform that makes projects like Fulcrum Suite possible.
 - **BenOfficial2** — for the inspiration that helped shape some of the ideas behind Fulcrum Suite.
+    Some Relative/GAP implementation concepts and code were adapted from BenOfficial2's Official Overlays project under GPL-3.0-or-later.
 
 Fulcrum Suite is an independent project and is not affiliated with or endorsed by SimHub or BenOfficial2.
