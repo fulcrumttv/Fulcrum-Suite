@@ -2,6 +2,30 @@
 
 All notable changes to Fulcrum Suite will be documented in this file.
 
+## [v1.0.0-beta.2] - 2026-08-30
+
+### Fixed
+
+- Relatives now detects and displays Slow Down penalties for other drivers using iRacing per-car session flags.
+- Fixed LAST DELTA remaining at `0.000` after valid completed laps.
+- Fixed the DigiFlags endurance-style triple flasher animation.
+- Fixed DigiFlags so the flasher repeats while the control is held.
+- Fixed Enable DigiFlags so disabling it hides the complete display instead of only the panel borders.
+- Corrected DigiFlags version metadata.
+- Increased the usable horizontal renderer width of Relatives for heavily customized column layouts.
+
+### Updated
+
+- Fulcrum Plugin: v4.1.33
+- Fulcrum Relatives: v6.6.90
+- Fulcrum Delta: v0.8.6.2
+- Fulcrum DigiFlags: v0.2.4.12
+
+### Unchanged
+
+All other overlays remain unchanged from v1.0.0-beta.1.
+
+
 ## [v1.0.0-beta.1] - 2026-08-29
 
 ### Added
