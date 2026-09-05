@@ -176,6 +176,20 @@ Fulcrum Radar supports:
 - SimHub
 - iRacing
 
+## Source and Development
+
+The plugin source, candidate overlays and regression harnesses are maintained
+in this repository. Public releases remain available as immutable tags and
+GitHub Release assets.
+
+- [Development and validation guide](DEVELOPMENT.md)
+- [Current component versions](VERSION.json)
+- [Release checklist](RELEASE_CHECKLIST.md)
+- [Changelog](CHANGELOG.md)
+
+The development tree can be newer than the latest public beta. Check
+`VERSION.json` before installing or packaging files from a branch.
+
 ## Beta Notice
 
 Fulcrum Suite is currently in public beta.

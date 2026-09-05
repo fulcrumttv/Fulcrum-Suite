@@ -1,0 +1,6 @@
+{
+  "position": {
+    "BackgroundColor": "#00000000"
+  },
+  "status": "var icon=(function(v){return v===true||v===1||String(v).toLowerCase()==='true';})($prop('FulcrumPlugin.Fulcrum.Relative.Table.Row05.StatusIconVisible'));if(icon)return '';var outlap=(function(v){return v===true||v===1||String(v).toLowerCase()==='true';})($prop('FulcrumPlugin.Fulcrum.Relative.Table.Row05.IsOutLap'));if(outlap)return 'OUT';var s=String($prop('FulcrumPlugin.Fulcrum.Relative.Table.Row05.StatusStintText')||'');if(s==='PIT'||s==='TOW'||s==='DQ'||s==='BLACK'||s==='MEATBALL')return s;var lap=Number($prop('FulcrumPlugin.Fulcrum.Relative.Table.Row05.StintLap'));if(isFinite(lap)&&lap>0)return 'L'+Math.max(1,Math.floor(lap)-1);var m=s.match(/^L\\s*(\\d+)$/i);if(m)return 'L'+Math.max(1,Number(m[1])-1);return s;"
+}

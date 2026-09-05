@@ -1,0 +1,45 @@
+name: Source validation
+
+on:
+  push:
+    paths:
+      - "Fulcrum.Core/**"
+      - "Fulcrum.Plugin/**"
+      - "Overlays/Fulcrum_Relatives_*.simhubdash"
+      - "VALIDACION/**"
+      - ".github/workflows/source-validation.yml"
+  pull_request:
+    paths:
+      - "Fulcrum.Core/**"
+      - "Fulcrum.Plugin/**"
+      - "Overlays/Fulcrum_Relatives_*.simhubdash"
+      - "VALIDACION/**"
+      - ".github/workflows/source-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  relative-regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run independent triplicate simulation
+        run: node VALIDACION/simulate_start_grid_triplicate.mjs
+
+      - name: Run source-derived regression suite three times
+        shell: bash
+        run: |
+          for validation_run in 1 2 3; do
+            echo "Validation run ${validation_run}/3"
+            node VALIDACION/test_class_positions.mjs
+          done

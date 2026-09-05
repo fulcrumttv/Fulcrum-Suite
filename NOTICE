@@ -24,8 +24,10 @@ Fulcrum modifications
 FulcrumTTV has modified and expanded the relevant implementation for
 Fulcrum Suite, including integration with Fulcrum's own plugin architecture,
 timing/reference behavior, publishing layer, UI/settings, and other suite
-features. The public beta source snapshot corresponds to Fulcrum Plugin
-v4.1.32 / Fulcrum Suite v1.0.0-beta.1 (2026-08-29).
+features. The source archive attached to v1.0.0-beta.1 corresponds to Fulcrum
+Plugin v4.1.32 (2026-08-29). The current unreleased development tree
+corresponds to Fulcrum Plugin v4.1.57 / Fulcrum Core v4.1.42; consult
+VERSION.json and the tagged release assets for the exact snapshot in use.
 
 This attribution does not imply endorsement by, affiliation with, or
 sponsorship by benofficial2 or SimHub.

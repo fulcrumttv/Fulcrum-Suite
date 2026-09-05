@@ -1,0 +1,24 @@
+# Visual Studio and .NET Framework build output
+.vs/
+**/bin/
+**/obj/
+dist/
+*.pdb
+*.user
+*.suo
+
+# Downloaded toolchains and local packages
+*.nupkg
+packages/
+node_modules/
+
+# Release artifacts are published through GitHub Releases
+*.zip
+
+# Temporary SimHub dashboard extraction files
+*.simhubdash.openai-download-*
+*.djson.00.png
+
+# Operating-system metadata
+.DS_Store
+Thumbs.db

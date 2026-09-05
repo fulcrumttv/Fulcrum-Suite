@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../Fulcrum.Plugin/Fulcrum.Plugin.csproj" Id="03342d8b-1a84-417e-9ccc-fc10b1a67aff" />
+  <Project Path="Fulcrum.Core.csproj" Id="7220d752-0bad-45dd-abfb-9d6e4eefaf0f" />
+</Solution>

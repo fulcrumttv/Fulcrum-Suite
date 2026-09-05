@@ -1,0 +1,119 @@
+﻿namespace Fulcrum.Core.Relative
+{
+    /// <summary>
+    /// Tracks pit-road transitions and current stint laps for every CarIndex.
+    /// All state is stored in fixed arrays and reused for the complete session.
+    /// </summary>
+    public sealed class StintTracker
+    {
+        private const int Capacity = ParticipantBuffer.DefaultCapacity;
+
+        private readonly bool[] initialized = new bool[Capacity];
+        private readonly bool[] previousPitRoad = new bool[Capacity];
+        private readonly int[] stintStartLap = new int[Capacity];
+        private readonly int[] stintLaps = new int[Capacity];
+        private readonly bool[] outLapActive = new bool[Capacity];
+        private readonly int[] outLapStartCompletedLap = new int[Capacity];
+        private readonly bool[] previouslyInWorld = new bool[Capacity];
+        private readonly bool[] towing = new bool[Capacity];
+        private readonly float[] previousLapDistance = new float[Capacity];
+
+        public void Update(ParticipantBuffer buffer)
+        {
+            if (buffer == null) return;
+
+            for (int carIndex = 0; carIndex < Capacity; carIndex++)
+            {
+                ParticipantSnapshot participant = buffer[carIndex];
+                bool valid = participant != null && participant.IsValid;
+                bool inWorld = participant != null && participant.TrackSurface >= 0;
+                bool pitRoad = valid && participant.IsOnPitRoad;
+
+                if (!initialized[carIndex])
+                {
+                    initialized[carIndex] = true;
+                    previousPitRoad[carIndex] = pitRoad;
+                    stintStartLap[carIndex] = participant != null ? participant.LapCompleted : 0;
+                    stintLaps[carIndex] = 0;
+                    previouslyInWorld[carIndex] = inWorld;
+                    towing[carIndex] = false;
+                    previousLapDistance[carIndex] = participant != null ? participant.LapDistancePercent : 0.0f;
+                    continue;
+                }
+
+                if (previousPitRoad[carIndex] && !pitRoad && valid)
+                {
+                    stintStartLap[carIndex] = participant.LapCompleted;
+                    stintLaps[carIndex] = 0;
+                    outLapActive[carIndex] = true;
+                    outLapStartCompletedLap[carIndex] = participant.LapCompleted;
+                    towing[carIndex] = false;
+                }
+
+                if (pitRoad)
+                {
+                    stintLaps[carIndex] = 0;
+                }
+                else if (valid)
+                {
+                    int completed = participant.LapCompleted - stintStartLap[carIndex];
+                    stintLaps[carIndex] = completed < 0 ? 0 : completed + 1;
+                }
+
+                if (pitRoad)
+                {
+                    outLapActive[carIndex] = false;
+                }
+                else if (outLapActive[carIndex] && valid)
+                {
+                    float previousDistance = previousLapDistance[carIndex];
+                    float currentDistance = participant.LapDistancePercent;
+
+                    // Keep OUT for the complete first lap after pit exit.
+                    // LapCompleted can increment near pit exit depending on
+                    // circuit timing lines, so use the real S/F wrap instead.
+                    if (previousDistance > 0.80f && currentDistance < 0.20f)
+                    {
+                        outLapActive[carIndex] = false;
+                    }
+                }
+
+                towing[carIndex] = !inWorld && previouslyInWorld[carIndex] && !previousPitRoad[carIndex];
+                if (inWorld) previouslyInWorld[carIndex] = true;
+                previousPitRoad[carIndex] = pitRoad;
+                if (valid) previousLapDistance[carIndex] = participant.LapDistancePercent;
+            }
+        }
+
+        public int GetStintLap(int carIndex)
+        {
+            return carIndex >= 0 && carIndex < Capacity ? stintLaps[carIndex] : 0;
+        }
+
+        public bool IsOutLap(int carIndex)
+        {
+            return carIndex >= 0 && carIndex < Capacity && outLapActive[carIndex];
+        }
+
+        public bool IsTowing(int carIndex)
+        {
+            return carIndex >= 0 && carIndex < Capacity && towing[carIndex];
+        }
+
+        public void Reset()
+        {
+            for (int index = 0; index < Capacity; index++)
+            {
+                initialized[index] = false;
+                previousPitRoad[index] = false;
+                stintStartLap[index] = 0;
+                stintLaps[index] = 0;
+                outLapActive[index] = false;
+                outLapStartCompletedLap[index] = 0;
+                previouslyInWorld[index] = false;
+                towing[index] = false;
+                previousLapDistance[index] = 0.0f;
+            }
+        }
+    }
+}

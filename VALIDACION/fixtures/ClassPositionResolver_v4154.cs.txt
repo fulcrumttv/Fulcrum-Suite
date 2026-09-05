@@ -1,0 +1,111 @@
+using System;
+using Fulcrum.Core.Session;
+
+namespace Fulcrum.Core.Relative
+{
+    /// <summary>Class classification includes ALL registered cars, including pits and disconnected cars.</summary>
+    public sealed class ClassPositionResolver
+    {
+        private readonly int[] grid = new int[64];
+        private readonly int[] gridClass = new int[64];
+        private readonly int[] nativePosition = new int[64];
+        private readonly int[] qualifyingOrder = new int[64];
+        private bool gridLocked;
+        private bool sawFormation;
+
+        public void Reset()
+        {
+            Array.Clear(grid, 0, grid.Length);
+            for (int i = 0; i < gridClass.Length; i++) gridClass[i] = -1;
+            gridLocked = false;
+            sawFormation = false;
+        }
+
+        public void Update(ParticipantBuffer buffer, SessionDatabase session, bool isRace, int state, object rawData = null)
+        {
+            bool startingNow = isRace && state == 4 && !gridLocked && sawFormation;
+            if (isRace && state >= 1 && state <= 3) sawFormation = true;
+            bool needGrid = !gridLocked;
+            for (int i = 0; i < buffer.Capacity && !needGrid; i++)
+                if (session.Get(i) != null && grid[i] == 0) needGrid = true;
+            bool hasQualifying = isRace && needGrid && RelativeSessionReader.ReadQualifyingOrder(rawData, qualifyingOrder);
+            for (int i = 0; i < buffer.Capacity; i++)
+            {
+                ParticipantSnapshot p = buffer[i];
+                nativePosition[i] = p.ClassPosition;
+                DriverIdentity identity = session.Get(i);
+                p.IsClassifiedParticipant = identity != null && identity.IsValid && !identity.IsNonCompetitor;
+                if (p.IsClassifiedParticipant && identity.ClassId >= 0) p.ClassId = identity.ClassId;
+                // Raw telemetry remains usable while session identity loads.
+                if (identity == null && (p.OverallPosition > 0 || p.ClassPosition > 0))
+                    p.IsClassifiedParticipant = true;
+                p.ClassSize = 0;
+                p.PositionGainLoss = 0;
+                p.PositionGainLossAvailable = false;
+            }
+
+            for (int i = 0; i < buffer.Capacity; i++)
+            {
+                ParticipantSnapshot p = buffer[i];
+                if (!p.IsClassifiedParticipant || p.ClassId < 0)
+                {
+                    p.ClassPosition = 0;
+                    continue;
+                }
+                int count = 0;
+                int ahead = 0;
+                int positioned = 0;
+                int qualified = 0;
+                int qualifyingAhead = 0;
+                bool duplicatedNative = false;
+                for (int j = 0; j < buffer.Capacity; j++)
+                {
+                    ParticipantSnapshot other = buffer[j];
+                    if (!other.IsClassifiedParticipant || other.ClassId != p.ClassId) continue;
+                    count++;
+                    if (hasQualifying && qualifyingOrder[j] > 0)
+                    {
+                        qualified++;
+                        if (qualifyingOrder[j] < qualifyingOrder[i]) qualifyingAhead++;
+                    }
+                    if (j != i && nativePosition[i] > 0 && nativePosition[j] == nativePosition[i])
+                        duplicatedNative = true;
+                    if (other.OverallPosition > 0)
+                    {
+                        positioned++;
+                        if (other.OverallPosition < p.OverallPosition) ahead++;
+                    }
+                }
+                p.ClassSize = count;
+                if (p.ClassPosition < 1 || p.ClassPosition > count || duplicatedNative)
+                {
+                    // Do not clamp an overall P40 to an arbitrary class P14.
+                    // Reconstruct its actual rank, or leave it unavailable.
+                    p.ClassPosition = p.OverallPosition > 0 && positioned == count ? ahead + 1 : 0;
+                }
+
+                if (isRace && !gridLocked && ((state >= 1 && state <= 3) || startingNow) && p.ClassPosition > 0)
+                {
+                    grid[i] = p.ClassPosition;
+                    gridClass[i] = p.ClassId;
+                }
+                // CarIdxClassPosition can be zero until green. The previous
+                // implementation then locked an EMPTY grid forever. Recover
+                // from qualifying order, filtered against the FULL class.
+                if (isRace && grid[i] == 0 && qualifyingOrder[i] > 0 && qualified == count)
+                {
+                    grid[i] = qualifyingAhead + 1;
+                    gridClass[i] = p.ClassId;
+                }
+                if (isRace && state >= 1 && state <= 3 && p.ClassPosition == 0 && gridClass[i] == p.ClassId)
+                    p.ClassPosition = grid[i];
+                if (isRace && state >= 4 && grid[i] > 0 && gridClass[i] == p.ClassId && p.ClassPosition > 0)
+                {
+                    p.PositionGainLossAvailable = true;
+                    p.PositionGainLoss = grid[i] - p.ClassPosition;
+                }
+            }
+            if (isRace && state >= 4) gridLocked = true;
+        }
+    }
+}
