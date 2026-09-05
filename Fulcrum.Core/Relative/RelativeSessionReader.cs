@@ -1,0 +1,283 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Reflection;
+
+namespace Fulcrum.Core.Relative
+{
+    /// <summary>Read relative race context from the actual nested iRacing frame.</summary>
+    public static class RelativeSessionReader
+    {
+        public static object Telemetry(object raw, string name)
+        {
+            // SimHub's raw frame owns a Telemetry dictionary. SessionState is
+            // NOT a property of the frame itself. Prefer the nested value.
+            return Member(Member(raw, "Telemetry"), name) ?? Member(raw, name);
+        }
+
+        public static int State(object raw)
+        {
+            object value = Telemetry(raw, "SessionState");
+            int number = Integer(value, -1);
+            if (number >= 0 && number <= 6) return number;
+            string text = Text(value).Replace("irsdk_State", "").Replace("_", "").ToLowerInvariant();
+            switch (text)
+            {
+                case "getincar": return 1;
+                case "warmup": return 2;
+                case "paradelaps": return 3;
+                case "racing": return 4;
+                case "checkered": return 5;
+                case "cooldown": return 6;
+                default: return -1;
+            }
+        }
+
+        public static string SessionType(object raw, string fallback)
+        {
+            object current = Member(raw, "CurrentSessionInfo");
+            string type = Text(Member(current, "SessionType"));
+            if (type.Length > 0) return type;
+            int number = Integer(Telemetry(raw, "SessionNum"), -1);
+            IEnumerable sessions = Member(Member(SessionData(raw), "SessionInfo"), "Sessions") as IEnumerable;
+            if (sessions != null)
+                foreach (object session in sessions)
+                    if (Integer(Member(session, "SessionNum"), -2) == number)
+                    {
+                        type = Text(Member(session, "SessionType"));
+                        if (type.Length > 0) return type;
+                    }
+            return fallback ?? string.Empty;
+        }
+
+        public static bool ReadQualifyingOrder(object raw, int[] order)
+        {
+            Array.Clear(order, 0, order.Length);
+            object data = SessionData(raw);
+            // QualifyResultsInfo Position is zero-based. Convert once here;
+            // class rank is subsequently counted inside the registered class.
+            object results = Member(Member(data, "QualifyResultsInfo"), "Results");
+            if (ReadOrder(results, order, true)) return true;
+
+            // A standalone qualifying session uses one-based ResultsPositions.
+            int current = Integer(Telemetry(raw, "SessionNum"), -1);
+            int latest = -1;
+            object qualifying = null;
+            IEnumerable sessions = Member(Member(data, "SessionInfo"), "Sessions") as IEnumerable;
+            if (sessions != null)
+                foreach (object session in sessions)
+                {
+                    int n = Integer(Member(session, "SessionNum"), -1);
+                    string type = Text(Member(session, "SessionType"));
+                    if (n >= latest && n >= 0 && current >= 0 && n < current &&
+                        type.IndexOf("qualify", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        latest = n;
+                        qualifying = Member(session, "ResultsPositions");
+                    }
+                }
+            return ReadOrder(qualifying, order, false);
+        }
+
+        /// <summary>
+        /// Read the original ZERO-based iRacing class grid and expose it as a
+        /// one-based order. The current session's QualifyPositions survives a
+        /// SimHub restart during the race, including heat/multiclass sessions.
+        /// </summary>
+        public static bool ReadStartingClassOrder(object raw, int[] classOrder)
+        {
+            Array.Clear(classOrder, 0, classOrder.Length);
+            object data = SessionData(raw);
+            object info = Member(data, "SessionInfo");
+            object current = Member(raw, "CurrentSessionInfo");
+            int number = Integer(Telemetry(raw, "SessionNum"), -1);
+            if (number < 0) number = Integer(Member(info, "CurrentSessionNum"), -1);
+            if (number < 0) number = Integer(Member(current, "SessionNum"), -1);
+            if (number < 0) return false;
+
+            // This source belongs to the race itself and is therefore usable
+            // when the plugin is loaded after green. Match SessionNum instead
+            // of assuming that an array index and a session identity coincide.
+            IEnumerable sessions = Member(info, "Sessions") as IEnumerable;
+            if (sessions != null)
+                foreach (object session in sessions)
+                    if (Integer(Member(session, "SessionNum"), -2) == number)
+                    {
+                        if (ReadClassOrder(Member(session, "QualifyPositions"), classOrder)) return true;
+                        break;
+                    }
+
+            if (Integer(Member(current, "SessionNum"), number) == number &&
+                ReadClassOrder(Member(current, "QualifyPositions"), classOrder)) return true;
+
+            // Normal races may expose only the global qualifying block. Its
+            // ClassPosition is already per class, unlike Position.
+            if (ReadClassOrder(Member(Member(data, "QualifyResultsInfo"), "Results"), classOrder)) return true;
+
+            // Last resort: the most recent qualifying session before this one.
+            int latest = -1;
+            object qualifying = null;
+            if (sessions != null)
+                foreach (object session in sessions)
+                {
+                    int n = Integer(Member(session, "SessionNum"), -1);
+                    string type = Text(Member(session, "SessionType"));
+                    if (n >= latest && n >= 0 && n < number &&
+                        type.IndexOf("qualify", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        latest = n;
+                        qualifying = Member(session, "ResultsPositions");
+                    }
+                }
+            return ReadClassOrder(qualifying, classOrder);
+        }
+
+        public static bool ReadSessionResults(object raw, int[] classOrder, int[] overallOrder)
+        {
+            Array.Clear(classOrder, 0, classOrder.Length);
+            Array.Clear(overallOrder, 0, overallOrder.Length);
+            object info = Member(SessionData(raw), "SessionInfo");
+            object current = Member(raw, "CurrentSessionInfo");
+            int number = Integer(Telemetry(raw, "SessionNum"), -1);
+            if (number < 0) number = Integer(Member(info, "CurrentSessionNum"), -1);
+            if (number < 0) number = Integer(Member(current, "SessionNum"), -1);
+            if (number < 0) return false;
+
+            // Use only the current SessionNum. This deliberately accepts race,
+            // AI/offline, practice and qualifying sessions; a session label is
+            // not reliable enough to decide whether +/- may operate.
+            IEnumerable sessions = Member(info, "Sessions") as IEnumerable;
+            if (sessions != null)
+                foreach (object session in sessions)
+                    if (Integer(Member(session, "SessionNum"), -2) == number)
+                    {
+                        object results = Member(session, "ResultsPositions");
+                        if (results != null) return ReadResultRows(results, classOrder, overallOrder);
+                        break;
+                    }
+
+            if (Integer(Member(current, "SessionNum"), number) != number) return false;
+            return ReadResultRows(Member(current, "ResultsPositions"), classOrder, overallOrder);
+        }
+
+        // Kept for binary/source compatibility with earlier internal tests.
+        public static bool ReadRaceResults(object raw, int[] classOrder, int[] overallOrder)
+        {
+            return ReadSessionResults(raw, classOrder, overallOrder);
+        }
+
+        private static bool ReadResultRows(object source, int[] classOrder, int[] overallOrder)
+        {
+            IEnumerable rows = source as IEnumerable;
+            if (rows == null) return false;
+            bool found = false;
+            foreach (object row in rows)
+            {
+                int car = Integer(Member(row, "CarIdx"), -1);
+                if (car < 0 || car >= classOrder.Length || car >= overallOrder.Length) continue;
+                // A duplicate row is not evidence of a coherent snapshot.
+                if (classOrder[car] != 0 || overallOrder[car] != 0)
+                {
+                    Array.Clear(classOrder, 0, classOrder.Length);
+                    Array.Clear(overallOrder, 0, overallOrder.Length);
+                    return false;
+                }
+                int cls = Integer(Member(row, "ClassPosition"), -1);
+                int overall = Integer(Member(row, "Position"), -1);
+                // Session results ClassPosition is ZERO-based, unlike the
+                // telemetry class rank. Results Position is already ONE-based.
+                classOrder[car] = cls >= 0 ? cls + 1 : -1;
+                overallOrder[car] = overall > 0 ? overall : 0;
+                found = true;
+            }
+            return found;
+        }
+
+        private static bool ReadClassOrder(object source, int[] classOrder)
+        {
+            IEnumerable rows = source as IEnumerable;
+            if (rows == null) return false;
+            bool found = false;
+            foreach (object row in rows)
+            {
+                int car = Integer(Member(row, "CarIdx"), -1);
+                int position = Integer(Member(row, "ClassPosition"), -1);
+                if (car < 0 || car >= classOrder.Length || position < 0) continue;
+                // Duplicate CarIdx rows indicate a transitional/incoherent
+                // snapshot. Never combine them into a starting reference.
+                if (classOrder[car] != 0)
+                {
+                    Array.Clear(classOrder, 0, classOrder.Length);
+                    return false;
+                }
+                classOrder[car] = position + 1;
+                found = true;
+            }
+            return found;
+        }
+
+        private static bool ReadOrder(object source, int[] order, bool zeroBased)
+        {
+            IEnumerable rows = source as IEnumerable;
+            if (rows == null) return false;
+            bool found = false;
+            foreach (object row in rows)
+            {
+                int car = Integer(Member(row, "CarIdx"), -1);
+                int position = Integer(Member(row, "Position"), -1);
+                if (zeroBased && position >= 0) position++;
+                if (car < 0 || car >= order.Length || position < 1) continue;
+                order[car] = position;
+                found = true;
+            }
+            return found;
+        }
+
+        private static object SessionData(object raw)
+        {
+            return Member(raw, "SessionData") ?? raw;
+        }
+
+        public static int Integer(object value, int fallback)
+        {
+            if (value == null) return fallback;
+            try { return Convert.ToInt32(value, CultureInfo.InvariantCulture); }
+            catch { return fallback; }
+        }
+
+        public static double Number(object value, double fallback)
+        {
+            if (value == null) return fallback;
+            try { return Convert.ToDouble(value, CultureInfo.InvariantCulture); }
+            catch { return fallback; }
+        }
+
+        private static string Text(object value)
+        {
+            return value == null ? string.Empty : Convert.ToString(value, CultureInfo.InvariantCulture).Trim();
+        }
+
+        public static object Member(object source, string name)
+        {
+            if (source == null) return null;
+            IDictionary<string, object> generic = source as IDictionary<string, object>;
+            object value;
+            if (generic != null && generic.TryGetValue(name, out value)) return value;
+            IReadOnlyDictionary<string, object> readOnly = source as IReadOnlyDictionary<string, object>;
+            if (readOnly != null && readOnly.TryGetValue(name, out value)) return value;
+            IDictionary dictionary = source as IDictionary;
+            if (dictionary != null && dictionary.Contains(name)) return dictionary[name];
+            Type type = source.GetType();
+            PropertyInfo property = type.GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            try
+            {
+                if (property != null && property.GetIndexParameters().Length == 0)
+                    return property.GetValue(source, null);
+                FieldInfo field = type.GetField(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+                return field == null ? null : field.GetValue(source);
+            }
+            catch { return null; }
+        }
+    }
+}

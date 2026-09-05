@@ -1,0 +1,219 @@
+using System;
+using Fulcrum.Core.Session;
+
+namespace Fulcrum.Core.Relative
+{
+    /// <summary>
+    /// One coherent classification per COMPLETE registered class, not per
+    /// visible/in-world car. A pit stop, tow or caution cannot shrink a class.
+    /// </summary>
+    public sealed class ClassPositionResolver
+    {
+        private readonly int[] grid = new int[64];
+        private readonly int[] gridClass = new int[64];
+        private readonly int[] gridSize = new int[64];
+        private readonly int[] gridGeneration = new int[64];
+        private readonly int[] nativePosition = new int[64];
+        private readonly int[] overallPosition = new int[64];
+        private readonly int[] qualifyingOrder = new int[64];
+        private readonly int[] resultPosition = new int[64];
+        private readonly int[] resultOverall = new int[64];
+        private readonly int[] lastPosition = new int[64];
+        private readonly int[] lastClass = new int[64];
+        private readonly int[] lastSize = new int[64];
+        private readonly int[] lastGeneration = new int[64];
+        private readonly bool[] handled = new bool[64];
+        private int generation;
+        private bool gridLocked;
+        private bool sawFormation;
+
+        public void Reset()
+        {
+            Array.Clear(grid, 0, grid.Length);
+            Array.Clear(gridSize, 0, gridSize.Length);
+            Array.Clear(gridGeneration, 0, gridGeneration.Length);
+            Array.Clear(lastPosition, 0, lastPosition.Length);
+            Array.Clear(lastSize, 0, lastSize.Length);
+            Array.Clear(lastGeneration, 0, lastGeneration.Length);
+            for (int i = 0; i < gridClass.Length; i++)
+            {
+                gridClass[i] = -1;
+                lastClass[i] = -1;
+            }
+            gridLocked = false;
+            sawFormation = false;
+            generation = 0;
+        }
+
+        public void Update(ParticipantBuffer buffer, SessionDatabase session, bool isRace, int state, object rawData = null)
+        {
+            bool formation = isRace && state >= 1 && state <= 3;
+            bool startingNow = isRace && state == 4 && !gridLocked && sawFormation;
+            if (formation) sawFormation = true;
+            // Snapshot all raw ranks BEFORE publishing any resolved rank.
+            // Validating already-modified neighbours used to permit duplicates.
+            for (int i = 0; i < buffer.Capacity; i++)
+            {
+                ParticipantSnapshot p = buffer[i];
+                nativePosition[i] = p.ClassPosition;
+                overallPosition[i] = p.OverallPosition;
+                DriverIdentity identity = session.Get(i);
+                p.IsClassifiedParticipant = identity != null && identity.IsValid && !identity.IsNonCompetitor;
+                if (p.IsClassifiedParticipant && identity.ClassId >= 0) p.ClassId = identity.ClassId;
+                if (identity == null && (p.OverallPosition > 0 || p.ClassPosition > 0))
+                    p.IsClassifiedParticipant = true;
+                p.ClassSize = 0;
+                p.ClassPosition = 0;
+                p.PositionGainLoss = 0;
+                p.PositionGainLossAvailable = false;
+                handled[i] = false;
+            }
+
+            bool needGrid = !gridLocked;
+            for (int i = 0; i < buffer.Capacity && !needGrid; i++)
+            {
+                ParticipantSnapshot p = buffer[i];
+                if (p.IsClassifiedParticipant && p.ClassId >= 0 &&
+                    !SameMembership(buffer, p.ClassId, CountClass(buffer, p.ClassId), gridClass, gridSize, gridGeneration))
+                    needGrid = true;
+            }
+            bool hasQualifying = isRace && needGrid && RelativeSessionReader.ReadQualifyingOrder(rawData, qualifyingOrder);
+            bool resultsRead = false;
+            bool hasResults = false;
+
+            for (int i = 0; i < buffer.Capacity; i++)
+            {
+                ParticipantSnapshot first = buffer[i];
+                if (handled[i] || !first.IsClassifiedParticipant || first.ClassId < 0) continue;
+                int classId = first.ClassId;
+                int count = CountClass(buffer, classId);
+                bool nativeValid = CompleteOrder(buffer, classId, nativePosition, count);
+                bool overallValid = CompleteOrder(buffer, classId, overallPosition, buffer.Capacity);
+                bool qualifyingValid = hasQualifying && CompleteOrder(buffer, classId, qualifyingOrder, buffer.Capacity);
+                if (isRace && state >= 4 && !nativeValid && !overallValid && !resultsRead)
+                {
+                    hasResults = RelativeSessionReader.ReadRaceResults(rawData, resultPosition, resultOverall);
+                    resultsRead = true;
+                }
+                bool resultClassValid = hasResults && CompleteOrder(buffer, classId, resultPosition, count);
+                bool resultOverallValid = hasResults && CompleteOrder(buffer, classId, resultOverall, buffer.Capacity);
+                bool cachedValid = SameMembership(buffer, classId, count, lastClass, lastSize, lastGeneration) &&
+                    CompleteOrder(buffer, classId, lastPosition, count);
+
+                // Pick ONE source for every member. A complete native class
+                // permutation wins; otherwise derive the WHOLE class from a
+                // complete, unique overall order. Never break ties by CarIdx.
+                // If both telemetry sources are incomplete, use a complete
+                // CURRENT-session results order (useful out of car). Otherwise
+                // retain the last coherent class or leave it all unavailable.
+                // Results and telemetry are NEVER spliced per car.
+                int source = nativeValid ? 1 : overallValid ? 2 :
+                    resultClassValid ? 3 : resultOverallValid ? 4 :
+                    formation && qualifyingValid ? 5 : cachedValid ? 6 : 0;
+                int cacheToken = source >= 1 && source <= 5 ? ++generation : 0;
+                for (int j = 0; j < buffer.Capacity; j++)
+                {
+                    ParticipantSnapshot p = buffer[j];
+                    if (!InClass(p, classId)) continue;
+                    handled[j] = true;
+                    p.ClassSize = count;
+                    p.ClassPosition = source == 1 ? nativePosition[j] :
+                        source == 2 ? RankInClass(buffer, classId, overallPosition, j) :
+                        source == 3 ? resultPosition[j] :
+                        source == 4 ? RankInClass(buffer, classId, resultOverall, j) :
+                        source == 5 ? RankInClass(buffer, classId, qualifyingOrder, j) :
+                        source == 6 ? lastPosition[j] : 0;
+                    if (source >= 1 && source <= 5)
+                    {
+                        lastPosition[j] = p.ClassPosition;
+                        lastClass[j] = classId;
+                        lastSize[j] = count;
+                        lastGeneration[j] = cacheToken;
+                    }
+                }
+
+                bool gridValid = SameMembership(buffer, classId, count, gridClass, gridSize, gridGeneration) &&
+                    CompleteOrder(buffer, classId, grid, count);
+                // A recorded pre-green grid must not be replaced by positions
+                // that arrive at green AFTER an early first-lap overtake.
+                bool capture = !gridLocked && (formation || (startingNow && !gridValid && !qualifyingValid)) &&
+                    source >= 1 && source <= 5;
+                bool recoverQualifying = isRace && !gridValid && !capture && qualifyingValid;
+                if (capture || recoverQualifying)
+                {
+                    int gridToken = ++generation;
+                    for (int j = 0; j < buffer.Capacity; j++)
+                    {
+                        if (!InClass(buffer[j], classId)) continue;
+                        grid[j] = capture ? buffer[j].ClassPosition :
+                            RankInClass(buffer, classId, qualifyingOrder, j);
+                        gridClass[j] = classId;
+                        gridSize[j] = count;
+                        gridGeneration[j] = gridToken;
+                    }
+                    gridValid = true;
+                }
+
+                for (int j = 0; j < buffer.Capacity; j++)
+                {
+                    ParticipantSnapshot p = buffer[j];
+                    if (!InClass(p, classId)) continue;
+                    if (isRace && state >= 4 && gridValid && p.ClassPosition > 0)
+                    {
+                        p.PositionGainLossAvailable = true;
+                        p.PositionGainLoss = grid[j] - p.ClassPosition;
+                    }
+                }
+            }
+            if (isRace && state >= 4) gridLocked = true;
+        }
+
+        private static bool InClass(ParticipantSnapshot p, int classId)
+        {
+            return p.IsClassifiedParticipant && p.ClassId == classId;
+        }
+
+        private static int CountClass(ParticipantBuffer buffer, int classId)
+        {
+            int count = 0;
+            for (int i = 0; i < buffer.Capacity; i++)
+                if (InClass(buffer[i], classId)) count++;
+            return count;
+        }
+
+        private static bool CompleteOrder(ParticipantBuffer buffer, int classId, int[] order, int maxRank)
+        {
+            for (int i = 0; i < buffer.Capacity; i++)
+            {
+                if (!InClass(buffer[i], classId)) continue;
+                if (order[i] < 1 || order[i] > maxRank) return false;
+                for (int j = 0; j < i; j++)
+                    if (InClass(buffer[j], classId) && order[j] == order[i]) return false;
+            }
+            return true;
+        }
+
+        private static int RankInClass(ParticipantBuffer buffer, int classId, int[] order, int car)
+        {
+            int rank = 1;
+            for (int i = 0; i < buffer.Capacity; i++)
+                if (InClass(buffer[i], classId) && order[i] < order[car]) rank++;
+            return rank;
+        }
+
+        private static bool SameMembership(ParticipantBuffer buffer, int classId, int count, int[] classes, int[] sizes, int[] tokens)
+        {
+            // Size/class alone are insufficient when members leave/rejoin.
+            // Every cached member must belong to the SAME captured snapshot.
+            int token = 0;
+            for (int i = 0; i < buffer.Capacity; i++)
+            {
+                if (!InClass(buffer[i], classId)) continue;
+                if (classes[i] != classId || sizes[i] != count || tokens[i] <= 0) return false;
+                if (token == 0) token = tokens[i];
+                else if (tokens[i] != token) return false;
+            }
+            return true;
+        }
+    }
+}

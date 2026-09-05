@@ -2,6 +2,37 @@
 
 All notable changes to Fulcrum Suite will be documented in this file.
 
+## [Unreleased]
+
+### Updated
+
+- Development snapshot: Plugin v4.1.57 and Core v4.1.42.
+- Fulcrum Relatives: v6.6.98.
+- Fulcrum Radar: v0.8.2.
+- Fulcrum Pit Assistant: v0.1.33.
+
+### Fixed
+
+- Reworked Radar side detection and spotlight tracking so the indicator stays
+  tied to a genuinely parallel car.
+- Limited Pit Assistant visibility to valid pit-entry and pit-lane contexts.
+- Corrected Relatives class positions through pits, tow, garage states and
+  extended cautions.
+- Restored per-class `+/-` updates in offline/AI and other active sessions.
+- Added recovery of the original per-class starting reference after a mid-race
+  SimHub restart when iRacing exposes current-session qualifying metadata.
+- Corrected red/blue lapping highlights and separated them from gray pit/tow/
+  garage priority.
+- Corrected race-start and pit-exit stint status behavior for every driver.
+
+### Validation status
+
+- Source-derived Relatives regressions and the independent start-grid model
+  pass locally and run automatically in GitHub Actions.
+- Native Windows compilation and live SimHub/iRacing testing remain required.
+- A late attach to a long-running endurance race still needs a trustworthy
+  STINT anchor; this is a release blocker documented in `DEVELOPMENT.md`.
+
 ## [v1.0.0-beta.2] - 2026-08-30
 
 ### Fixed
